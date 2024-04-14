@@ -4,6 +4,7 @@ import nsu.crackhash.manager.api.CrackHashRequest
 import nsu.crackhash.manager.api.CrackHashStatus
 import nsu.crackhash.manager.api.CrackHashWorkerReportRequest
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import java.util.*
 
 
@@ -18,6 +19,7 @@ data class WorkerTaskInfo(
     val status: CrackHashStatus
 )
 
+@Document
 data class ManagerCrackHashInfo(
     @Id
     val id: UUID,

@@ -18,7 +18,7 @@ class ManagerRestApiClient(private val configuration: ManagerConfiguration) : Ma
         managerRestClient.post()
             .uri(MANAGER_HASH_CRACK_REQUEST)
             .body(reportAboutCracking)
-            .exchange { req, res -> if (!res.statusCode.is2xxSuccessful) {
+            .exchange { _, res -> if (!res.statusCode.is2xxSuccessful) {
                 throw Exception("Request to manager with url=${configuration.managerUrl} failed")
             } }
     }

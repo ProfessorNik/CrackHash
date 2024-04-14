@@ -1,49 +1,63 @@
-version: '3.3'
-
-networks:
-  integration-network:
-    driver: bridge
+version: '3.8'
 
 services:
   manager:
     image: 'manager:0.0.1-SNAPSHOT'
-    networks:
-      - integration-network
-    container_name: manager
+    depends_on:
+      - mongo1
     ports:
-      - "8081:8080"
-      - "18081:18080"
+      - "8080:8080"
     environment:
       - APP_WORKERS=http://worker1:8081,http://worker2:8081,http://worker3:8081
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/test
 
   worker1:
     image: 'worker:0.0.1-SNAPSHOT'
-    networks:
-      - integration-network
-    container_name: worker1
     environment:
       - APP_MANAGER_URL=http://manager:8080
-    ports:
-      - "8082:8081"
-      - "18082:18080"
+
   worker2:
     image: 'worker:0.0.1-SNAPSHOT'
-    networks:
-      - integration-network
-    container_name: worker2
     environment:
       - APP_MANAGER_URL=http://manager:8080
-    ports:
-      - "8083:8081"
-      - "18083:18080"
 
   worker3:
     image: 'worker:0.0.1-SNAPSHOT'
-    networks:
-      - integration-network
-    container_name: worker3
     environment:
       - APP_MANAGER_URL=http://manager:8080
-    ports:
-      - "8084:8081"
-      - "18084:18080"
+
+  mongo1:
+    image: mongo:latest
+    depends_on:
+      - mongo2
+      - mongo3
+    command:
+      - '--replSet'
+      - 'replica-set'
+      - '--bind_ip_all'
+
+  mongo2:
+    image: mongo:latest
+    command:
+      - '--replSet'
+      - 'replica-set'
+      - '--bind_ip_all'
+
+  mongo3:
+    image: mongo:latest
+    command:
+      - '--replSet'
+      - 'replica-set'
+      - '--bind_ip_all'
+
+  mongosetup:
+    image: mongo:latest
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    volumes:
+      - ./rs-init.sh:/scripts/rs-init.sh
+    entrypoint:
+      - 'bash'
+      - '/scripts/rs-init.sh'
