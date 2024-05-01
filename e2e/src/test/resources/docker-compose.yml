@@ -5,26 +5,36 @@ services:
     image: 'manager:0.0.1-SNAPSHOT'
     depends_on:
       - mongo1
+      - kafka
     ports:
       - "8080:8080"
     environment:
       - APP_WORKERS=http://worker1:8081,http://worker2:8081,http://worker3:8081
       - SPRING_DATA_MONGODB_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/test
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - APP_TTL=300000
+      - SPRING_KAFKA_CLIENTID=manager
 
   worker1:
     image: 'worker:0.0.1-SNAPSHOT'
     environment:
       - APP_MANAGER_URL=http://manager:8080
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - SPRING_KAFKA_CLIENTID=worker1
 
   worker2:
     image: 'worker:0.0.1-SNAPSHOT'
     environment:
       - APP_MANAGER_URL=http://manager:8080
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - SPRING_KAFKA_CLIENTID=worker2
 
   worker3:
     image: 'worker:0.0.1-SNAPSHOT'
     environment:
       - APP_MANAGER_URL=http://manager:8080
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - SPRING_KAFKA_CLIENTID=worker3
 
   mongo1:
     image: mongo:latest
@@ -61,3 +71,27 @@ services:
     entrypoint:
       - 'bash'
       - '/scripts/rs-init.sh'
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092'
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      CLUSTER_ID: q1Sh-9_ISia_zwGINzRvyQ
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: q1Sh-9_ISia_zwGINzRvyQ
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      - kafka

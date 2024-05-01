@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 
 @Component
-class ManagerRestApiClient(private val configuration: ManagerConfiguration) : ManagerGetaway {
+class ManagerRestApiClient(private val configuration: RestApiManagerConfiguration) : ManagerGetaway {
 
     val managerRestClient = RestClient.builder().baseUrl(configuration.managerUrl).build()
 

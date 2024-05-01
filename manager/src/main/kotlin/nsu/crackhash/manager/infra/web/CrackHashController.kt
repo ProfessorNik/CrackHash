@@ -1,9 +1,9 @@
-package nsu.crackhash.manager.infra
+package nsu.crackhash.manager.infra.web
 
 import nsu.crackhash.manager.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
-import java.util.UUID
+import java.util.*
 
 @RestController
 class CrackHashController @Autowired constructor(
@@ -19,7 +19,7 @@ class CrackHashController @Autowired constructor(
 
     @GetMapping(ManagerUrl.API_HASH_STATUS)
     fun crackStatus(@RequestParam requestId: UUID): CrackStatusResponse {
-        return crackStatus.crackStatus(CrackStatusRequest(requestId));
+        return crackStatus.crackStatus(CrackStatusRequest(requestId))
     }
 
     @PostMapping(ManagerUrl.INTERNAL_API_HASH_CRACK_REQUEST)

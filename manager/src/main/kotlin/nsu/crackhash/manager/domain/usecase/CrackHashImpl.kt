@@ -1,10 +1,11 @@
 package nsu.crackhash.manager.domain.usecase
 
 import nsu.crackhash.manager.api.*
+import nsu.crackhash.manager.config.ApplicationConfigurationProperties
 import nsu.crackhash.manager.domain.model.ManagerCrackHashInfo
 import nsu.crackhash.manager.domain.model.RequestId
-import nsu.crackhash.manager.domain.port.ManagerCrackHashInfoRepository
-import nsu.crackhash.manager.domain.port.WorkerGetaway
+import nsu.crackhash.manager.api.ManagerCrackHashInfoRepository
+import nsu.crackhash.manager.api.WorkerGetaway
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Service
@@ -15,8 +16,11 @@ import java.util.*
 class CrackHashImpl @Autowired constructor(
     private val workerGetaway: WorkerGetaway,
     private val managerCrackHashInfoRepository: ManagerCrackHashInfoRepository,
-    private val scheduler: TaskScheduler
+    private val scheduler: TaskScheduler,
+    applicationConfigurationProperties: ApplicationConfigurationProperties
 ) : CrackHash {
+
+    private val ttlInMillis = applicationConfigurationProperties.ttl
 
     override fun crackHash(request: CrackHashRequest): CrackHashResponse {
         val workersInfo = workerGetaway.workersInfo()
@@ -26,7 +30,7 @@ class CrackHashImpl @Autowired constructor(
         managerCrackHashInfoRepository.add(managerCrackHashInfo)
 
         val tasks = managerCrackHashInfo.generateTasks()
-        Result.runCatching { workerGetaway.assignTasks(tasks) }
+        runCatching { workerGetaway.assignTasks(tasks) }
             .onFailure {
                 val managerCrackHashInfoCrashed = managerCrackHashInfo.happenedError()
                 managerCrackHashInfoRepository.add(managerCrackHashInfoCrashed)
@@ -34,7 +38,7 @@ class CrackHashImpl @Autowired constructor(
 
         scheduler.schedule(
             { happenedErrorIfNotCompleted(managerCrackHashInfo.requestId) },
-            Instant.now().plusSeconds(60)
+            Instant.now().plusMillis(ttlInMillis)
         )
 
         return CrackHashResponse(managerCrackHashInfo.requestId.value)

@@ -80,7 +80,7 @@ data class ManagerCrackHashInfo(
         val taskCount = workInfo.size
         return workInfo.map { worker ->
             WorkerTask(
-                worker.workerId,
+                worker.workerId.value,
                 requestId,
                 hash,
                 maxLength,
@@ -92,7 +92,8 @@ data class ManagerCrackHashInfo(
     }
 
     fun withWorkerResponse(crackHashWorkerReportRequest: CrackHashWorkerReportRequest): ManagerCrackHashInfo {
-        val haveResponsePartNumber: (WorkerTaskInfo) -> Boolean = { it.partNumber == crackHashWorkerReportRequest.partNumber }
+        val haveResponsePartNumber: (WorkerTaskInfo) -> Boolean =
+            { it.partNumber == crackHashWorkerReportRequest.partNumber }
 
         val crackWorker = workInfo.find { haveResponsePartNumber(it) }
             ?: throw IllegalArgumentException(

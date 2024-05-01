@@ -5,6 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 typealias MangerUrl = String
 
 @ConfigurationProperties(prefix = "app")
-data class ManagerConfiguration(
+data class RestApiManagerConfiguration(
     val managerUrl: MangerUrl
 )

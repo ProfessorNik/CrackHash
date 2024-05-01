@@ -31,6 +31,8 @@ class E2eApplicationTests {
         val wordLength = 4
         val hashWord = "e2fc714c4727ee9395f324cd2e7f331f"
 
+        Thread.sleep(20000)
+
         val crackHashResponse = managerTestClient.post()
             .uri(CRACK_HASH_URL)
             .contentType(MediaType.APPLICATION_JSON)
@@ -43,8 +45,7 @@ class E2eApplicationTests {
 
 
         Assertions.assertNotNull(crackHashResponse)
-        Awaitility.await()
-            .timeout(Duration.ofSeconds(5))
+        Thread.sleep(20000)
 
 
         managerTestClient.get()

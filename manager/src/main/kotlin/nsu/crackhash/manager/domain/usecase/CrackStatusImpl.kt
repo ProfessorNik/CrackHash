@@ -4,7 +4,7 @@ import nsu.crackhash.manager.api.CrackStatus
 import nsu.crackhash.manager.api.CrackStatusRequest
 import nsu.crackhash.manager.api.CrackStatusResponse
 import nsu.crackhash.manager.domain.model.RequestId
-import nsu.crackhash.manager.domain.port.ManagerCrackHashInfoRepository
+import nsu.crackhash.manager.api.ManagerCrackHashInfoRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 

@@ -13,7 +13,29 @@ import java.math.BigInteger
 class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
 
     override fun crackHash(request: CrackHashRequest) {
-        val hashMatchesWords = Generator.permutation(request.alphabet.symbols)
+        val list = mutableListOf<String>()
+
+        for (i in 1..request.maxLength) {
+            list.addAll(
+                crackHash2(
+                    request.copy(maxLength = i)
+                )
+            )
+        }
+
+        return managerGetaway.reportAboutCracking(
+            ReportAboutCracking(
+                request.requestId,
+                request.partNumber,
+                Answers(
+                    list.toList()
+                )
+            )
+        )
+    }
+
+    fun crackHash2(request: CrackHashRequest): List<String> {
+        return Generator.permutation(request.alphabet.symbols)
             .withRepetitions(request.maxLength)
             .stream()
             .skip(quantitySkipPermutationWithRepetition(request))
@@ -21,16 +43,6 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
             .map { it.joinToString(separator = "") }
             .filter { word -> hashMatches(word, request.hash) }
             .toList().toList()
-
-        return managerGetaway.reportAboutCracking(
-            ReportAboutCracking(
-                request.requestId,
-                request.partNumber,
-                Answers(
-                    hashMatchesWords
-                )
-            )
-        )
     }
 
     private fun hashMatches(word: String, requestHash: String): Boolean {

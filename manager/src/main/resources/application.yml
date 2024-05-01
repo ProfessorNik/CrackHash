@@ -1,5 +1,22 @@
 server:
   port: 8080
 
+spring:
+  kafka:
+    client-id: manager
+    consumer:
+      group-id: managers
+      enable-auto-commit: true
+    producer:
+      retries: 0
+      properties:
+        max:
+          block:
+            ms: 5000
+
 app:
-  workers: http://localhost:8081,http://localhost:8082
+  kafka-topics:
+    quantity-workers: 3
+  rest:
+    workers: http://localhost:8081
+  ttl: 10000

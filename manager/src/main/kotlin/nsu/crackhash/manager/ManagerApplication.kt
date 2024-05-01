@@ -1,7 +1,6 @@
 package nsu.crackhash.manager
 
-import nsu.crackhash.manager.config.WorkersConfiguration
-import nsu.crackhash.manager.domain.port.ManagerCrackHashInfoRepository
+import nsu.crackhash.manager.config.KafkaTopicsConfigurationProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -18,8 +17,6 @@ class ManagerApplication
 
 fun main(args: Array<String>) {
     val context = runApplication<ManagerApplication>(*args)
-    val workersConfiguration = context.getBean(WorkersConfiguration::class.java)
-    val repository = context.getBean(ManagerCrackHashInfoRepository::class.java)
-    System.err.println(workersConfiguration)
-    System.err.println(repository::class.java)
+    val properties = context.getBean(KafkaTopicsConfigurationProperties::class.java)
+    System.err.println(properties)
 }

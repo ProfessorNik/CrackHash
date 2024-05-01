@@ -3,7 +3,7 @@ package nsu.crackhash.manager.domain.usecase
 import nsu.crackhash.manager.api.CrackHashWorkerReportHandler
 import nsu.crackhash.manager.api.CrackHashWorkerReportRequest
 import nsu.crackhash.manager.domain.model.RequestId
-import nsu.crackhash.manager.domain.port.ManagerCrackHashInfoRepository
+import nsu.crackhash.manager.api.ManagerCrackHashInfoRepository
 import org.springframework.stereotype.Service
 
 @Service
