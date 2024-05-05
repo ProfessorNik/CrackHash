@@ -6,6 +6,7 @@ import nsu.crackhash.manager.api.CrackHashWorkerReportRequest
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.util.*
+import kotlin.time.Duration
 
 
 typealias CrackedWord = String
@@ -16,7 +17,8 @@ typealias Hash = String
 data class WorkerTaskInfo(
     val workerId: WorkerId,
     val partNumber: PartNumber,
-    val status: CrackHashStatus
+    val status: CrackHashStatus,
+    val timeLeftToComplete: Duration
 )
 
 @Document
@@ -26,7 +28,7 @@ data class ManagerCrackHashInfo(
     val crackHashStatus: CrackHashStatus,
     val hash: Hash,
     val maxLength: WordMaxLength,
-    val data: List<CrackedWord>,
+    val data: Set<CrackedWord>,
     val workInfo: List<WorkerTaskInfo>
 ) {
 
@@ -60,12 +62,13 @@ data class ManagerCrackHashInfo(
                 CrackHashStatus.IN_PROGRESS,
                 request.hash,
                 request.maxLength,
-                listOf(),
+                setOf(),
                 workersInfo.mapIndexed { index, it ->
                     WorkerTaskInfo(
                         workerId = it.workerId,
                         partNumber = index,
-                        status = CrackHashStatus.IN_PROGRESS
+                        status = CrackHashStatus.IN_PROGRESS,
+                        timeLeftToComplete = Duration.INFINITE
                     )
                 }
             )
@@ -92,23 +95,16 @@ data class ManagerCrackHashInfo(
     }
 
     fun withWorkerResponse(crackHashWorkerReportRequest: CrackHashWorkerReportRequest): ManagerCrackHashInfo {
-        val haveResponsePartNumber: (WorkerTaskInfo) -> Boolean =
-            { it.partNumber == crackHashWorkerReportRequest.partNumber }
-
-        val crackWorker = workInfo.find { haveResponsePartNumber(it) }
-            ?: throw IllegalArgumentException(
-                "Worker responsible for partNumber=${crackHashWorkerReportRequest.partNumber} not found"
-            )
-
-        if (crackWorker.status != CrackHashStatus.IN_PROGRESS) {
-            throw IllegalStateException(
-                "This worker already worked"
-            )
-        }
-
         val updatedWorkInfo = workInfo.map {
-            if (haveResponsePartNumber(it)) {
-                it.copy(status = CrackHashStatus.READY)
+            if (it.partNumber == crackHashWorkerReportRequest.partNumber && it.status != CrackHashStatus.READY) {
+                if (crackHashWorkerReportRequest.isReady) {
+                    it.copy(
+                        status = CrackHashStatus.READY,
+                        timeLeftToComplete = crackHashWorkerReportRequest.timeLeftToComplete
+                    )
+                } else {
+                    it.copy(timeLeftToComplete = crackHashWorkerReportRequest.timeLeftToComplete)
+                }
             } else {
                 it
             }

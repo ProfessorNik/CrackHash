@@ -47,6 +47,10 @@
 - Test Containers
 - WebTestClient
 
+# Cхема работы
+
+![](scheme.png)
+
 # Запуск 
 
 ```

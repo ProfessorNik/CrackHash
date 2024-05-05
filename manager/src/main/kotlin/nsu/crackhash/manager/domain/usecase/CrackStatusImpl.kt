@@ -3,10 +3,11 @@ package nsu.crackhash.manager.domain.usecase
 import nsu.crackhash.manager.api.CrackStatus
 import nsu.crackhash.manager.api.CrackStatusRequest
 import nsu.crackhash.manager.api.CrackStatusResponse
-import nsu.crackhash.manager.domain.model.RequestId
 import nsu.crackhash.manager.api.ManagerCrackHashInfoRepository
+import nsu.crackhash.manager.domain.model.RequestId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import kotlin.time.Duration
 
 @Service
 class CrackStatusImpl @Autowired constructor(
@@ -17,6 +18,12 @@ class CrackStatusImpl @Autowired constructor(
         val managerCrackHashInfo = managerCrackHashInfoRepository.findById(RequestId(request.requestId))
             ?: throw NoSuchElementException()
 
-        return CrackStatusResponse(managerCrackHashInfo.crackHashStatus, managerCrackHashInfo.data)
+        return CrackStatusResponse(
+            managerCrackHashInfo.crackHashStatus,
+            managerCrackHashInfo.data.toList(),
+            managerCrackHashInfo.workInfo.fold(Duration.ZERO) { acc, workerTaskInfo ->
+                maxOf(acc, workerTaskInfo.timeLeftToComplete)
+            }.toString()
+        )
     }
 }
