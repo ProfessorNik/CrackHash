@@ -59,7 +59,7 @@ data class ManagerCrackHashInfo(
         fun emerge(requestId: UUID, request: CrackHashRequest, workersInfo: List<WorkerInfo>): ManagerCrackHashInfo {
             return ManagerCrackHashInfo(
                 requestId,
-                CrackHashStatus.IN_PROGRESS,
+                CrackHashStatus.IN_QUEUE,
                 request.hash,
                 request.maxLength,
                 setOf(),
@@ -67,7 +67,7 @@ data class ManagerCrackHashInfo(
                     WorkerTaskInfo(
                         workerId = it.workerId,
                         partNumber = index,
-                        status = CrackHashStatus.IN_PROGRESS,
+                        status = CrackHashStatus.IN_QUEUE,
                         timeLeftToComplete = Duration.INFINITE
                     )
                 }
@@ -97,14 +97,14 @@ data class ManagerCrackHashInfo(
     fun withWorkerResponse(crackHashWorkerReportRequest: CrackHashWorkerReportRequest): ManagerCrackHashInfo {
         val updatedWorkInfo = workInfo.map {
             if (it.partNumber == crackHashWorkerReportRequest.partNumber && it.status != CrackHashStatus.READY) {
-                if (crackHashWorkerReportRequest.isReady) {
-                    it.copy(
-                        status = CrackHashStatus.READY,
-                        timeLeftToComplete = crackHashWorkerReportRequest.timeLeftToComplete
-                    )
-                } else {
-                    it.copy(timeLeftToComplete = crackHashWorkerReportRequest.timeLeftToComplete)
-                }
+                it.copy(
+                    status = if (crackHashWorkerReportRequest.isReady) {
+                        CrackHashStatus.READY
+                    } else {
+                        CrackHashStatus.IN_PROGRESS
+                    },
+                    timeLeftToComplete = crackHashWorkerReportRequest.timeLeftToComplete
+                )
             } else {
                 it
             }
@@ -112,10 +112,20 @@ data class ManagerCrackHashInfo(
 
         val answers = crackHashWorkerReportRequest.answers
 
-        return if (updatedWorkInfo.any { it.status == CrackHashStatus.READY }) {
-            copy(crackHashStatus = CrackHashStatus.READY, workInfo = updatedWorkInfo, data = data + answers.words)
+        return this.copy(
+            crackHashStatus = countStatus(updatedWorkInfo),
+            workInfo = updatedWorkInfo,
+            data = data + answers.words
+        )
+    }
+
+    private fun countStatus(workInfo: List<WorkerTaskInfo>): CrackHashStatus {
+        return if (workInfo.all { it.status == CrackHashStatus.READY }) {
+            CrackHashStatus.READY
+        } else if (workInfo.any { it.status == CrackHashStatus.IN_PROGRESS }) {
+            CrackHashStatus.IN_PROGRESS
         } else {
-            copy(workInfo = updatedWorkInfo, data = data + answers.words)
+            CrackHashStatus.IN_QUEUE
         }
     }
 }

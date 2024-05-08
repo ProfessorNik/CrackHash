@@ -23,7 +23,7 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
-	implementation("com.github.dpaukov:combinatoricslib3:3.4.0")
+	implementation("com.github.dpaukov:combinatoricslib3:3.3.3")
 	implementation("commons-codec:commons-codec:1.16.1")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

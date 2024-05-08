@@ -30,7 +30,7 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
                 while (!Thread.interrupted()) {
                     Thread.sleep(1000)
                     val timeLeftToComplete = counter.timeLeftToComplete()
-                    println("Time left to complete: $timeLeftToComplete")
+                    println("COUNTER: $counter")
                     managerGetaway.reportAboutCracking(
                         ReportAboutCracking(
                             request.requestId,
@@ -62,6 +62,7 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
 
         timeLeftToCompletePublisherThread.interrupt()
         timeLeftToCompletePublisherThread.join()
+        println("COUNTER after end cracking: $counter")
 
         managerGetaway.reportAboutCracking(
             ReportAboutCracking(
@@ -92,6 +93,10 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
             val currentTime = System.currentTimeMillis()
             val elapsedTimeInMillis = currentTime - startTime
             return count.toDouble() / elapsedTimeInMillis
+        }
+
+        override fun toString(): String {
+            return "Counter(total=$total, count=$count, startTime=$startTime, timeLeftToComplete=${timeLeftToComplete()})"
         }
     }
 
@@ -140,7 +145,7 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
     }
 
     private fun quantityLimitPermutationWithRepetition(source: CrackHashSource): Long {
-        return quantitySkipPermutationWithRepetition(source) + quantityPermutationWithRepetitionByOneWorker(source)
+        return quantityPermutationWithRepetitionByOneWorker(source)
     }
 
     private fun quantityPermutationWithRepetitionByOneWorker(source: CrackHashSource): Long {
@@ -156,10 +161,8 @@ class CrackHashImpl(val managerGetaway: ManagerGetaway) : CrackHash {
         maxLength: Int,
         partCount: Int
     ): Long {
-        return quantityPermutationWithRepetitionByMaxLength(alphabet, maxLength) / partCount
+        return (1..maxLength).sumOf { quantityPermutationWithRepetition(alphabet, it) / partCount }
     }
 
-    private fun quantityPermutationWithRepetitionByMaxLength(alphabet: List<*>, maxLength: Int): Long {
-        return (1..maxLength).sumOf { quantityPermutationWithRepetition(alphabet, it) }
-    }
+
 }

@@ -18,6 +18,8 @@ class CrackStatusImpl @Autowired constructor(
         val managerCrackHashInfo = managerCrackHashInfoRepository.findById(RequestId(request.requestId))
             ?: throw NoSuchElementException()
 
+        System.err.println(managerCrackHashInfo)
+
         return CrackStatusResponse(
             managerCrackHashInfo.crackHashStatus,
             managerCrackHashInfo.data.toList(),
